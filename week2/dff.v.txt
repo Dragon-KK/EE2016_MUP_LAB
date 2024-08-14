@@ -1,0 +1,10 @@
+module dff(q, qbar, d, clk);
+    input d, clk;
+    
+    output qbar;
+    output reg q;  
+    
+    not(qbar, q);
+    always @(posedge clk) q <= d;
+endmodule
+

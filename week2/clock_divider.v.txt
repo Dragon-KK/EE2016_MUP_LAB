@@ -1,0 +1,22 @@
+module clock_divider(inclk, rst,  outclk);
+    input inclk;
+    input rst;
+    output reg outclk=0;
+    reg[32:0] clock_count;
+
+    initial clock_count=0;
+
+    always @(posedge inclk) begin
+        if (rst == 0) begin
+            outclk = 0;
+            clock_count = 0;
+        end
+        else begin
+        clock_count=clock_count+1;
+        if(clock_count==50000000) begin
+            outclk = ~outclk;
+            clock_count = 0;
+        end
+    end
+end
+endmodule

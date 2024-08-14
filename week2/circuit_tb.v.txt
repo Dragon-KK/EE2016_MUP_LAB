@@ -1,0 +1,33 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 08/14/2024 02:50:19 PM
+// Design Name: 
+// Module Name: circuit_tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module circuit_tb(
+
+    );
+    reg clk = 0;
+    wire [6:0] seg_out;
+    wire [2:0] qs;
+    initial begin
+        repeat(30) #10 clk=~clk;
+    end
+    circuit c(clk, seg_out, qs);
+endmodule

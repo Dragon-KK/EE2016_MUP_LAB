@@ -1,0 +1,15 @@
+module dff_rst(q, qbar, d, clk, rst); //rst is active low meaning if rst =0 then q=0
+    output reg q;
+    output wire qbar;
+    input d;
+    input clk, rst;
+
+    not(qbar, q);
+
+    initial q = 0;
+    
+    always @(posedge clk) begin
+        if (~rst) q <= 0;
+        else q <= d;
+    end
+endmodule
