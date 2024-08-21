@@ -1,0 +1,312 @@
+module lcd2(in_Clk, lcd_rs, lcd_e, data, number);
+    input in_Clk;
+    output reg [7:0] data;
+    output reg lcd_rs;
+    output lcd_e;
+    input [7:0] number;
+    
+    wire [3:0] bcd0;
+    wire [3:0] bcd1;
+    wire [3:0] bcd2;
+    binary2bcd b2b(bcd0, bcd1, bcd2, number);
+    
+    wire [7:0] command [0:4];
+    reg [31:0] count=0;
+    
+    assign command [0] = 8'h38; // control signal to display on two lines
+    assign command [1] = 8'h0C; // keep display on but cursor off
+    assign command [2] = 8'h06; // increment the cursor
+    assign command [3] = 8'h01; // clear the display
+    assign command [4] = 8'hC0; // choose the second line
+    
+    clk_div c0 (in_Clk, lcd_e);
+    
+    always@(number) begin
+        count = 0;
+    end
+
+    always@(posedge lcd_e) begin
+        count = count + 1;
+        
+        case(count)
+            1: begin lcd_rs = 0; data = 8'h38; end // fill in suitably
+            2: begin lcd_rs = 0; data = 8'h0C; end
+            3: begin lcd_rs = 0; data = 8'h06; end
+            4: begin lcd_rs = 0; data = 8'h01; end
+            6 : begin lcd_rs=1; data = 8'h46 ; end
+            7: begin lcd_rs = 1; data = 8'h46; end // 2
+            8: begin lcd_rs = 1; data = 8'h32; end // 3
+            9: begin lcd_rs = 1; data = 8'h33; end // 4
+            10 : begin lcd_rs=1; data = 8'h85 ; end
+            11 : begin lcd_rs=1; data = 8'h67 ; end
+            12 : begin lcd_rs=1; data = 8'h84 ; end
+            13 : begin lcd_rs=1; data = 8'h32 ; end
+            14 : begin lcd_rs=1; data = 8'h61 ; end
+            15 : begin lcd_rs=1; data = 8'h32 ; end
+            
+            16: begin lcd_rs = 0; data = 8'hC0; end
+            17: begin lcd_rs = 1; data = 8'h48 + bcd2; end // fill in hex corresp to ASCII for 1
+            18: begin lcd_rs = 1; data = 8'h29 + bcd1; end // 2
+            19: begin lcd_rs = 1; data = 8'h29 + bcd0; end // 3
+            default: begin lcd_rs = 0; data = 8'h80; end
+                // fill in hex value to return cursor to initial c0 
+        endcase
+    end
+endmodule
+
+
+
+
+
+set_property -dict { PACKAGE_PIN N11    IOSTANDARD LVCMOS33 } [get_ports { in_Clk }];
+
+set_property -dict { PACKAGE_PIN J3    IOSTANDARD LVCMOS33 } [get_ports { m[0] }];#LSB
+set_property -dict { PACKAGE_PIN H3    IOSTANDARD LVCMOS33 } [get_ports { m[1] }];
+set_property -dict { PACKAGE_PIN J1    IOSTANDARD LVCMOS33 } [get_ports { m[2] }];
+set_property -dict { PACKAGE_PIN K1    IOSTANDARD LVCMOS33 } [get_ports { m[3] }];
+set_property -dict { PACKAGE_PIN L3    IOSTANDARD LVCMOS33 } [get_ports { m[4] }];
+set_property -dict { PACKAGE_PIN L2    IOSTANDARD LVCMOS33 } [get_ports { m[5] }];
+set_property -dict { PACKAGE_PIN K3    IOSTANDARD LVCMOS33 } [get_ports { m[6] }];
+set_property -dict { PACKAGE_PIN K2    IOSTANDARD LVCMOS33 } [get_ports { m[7] }];
+
+set_property -dict { PACKAGE_PIN L5    IOSTANDARD LVCMOS33 } [get_ports { a[0] }];#LSB
+set_property -dict { PACKAGE_PIN L4    IOSTANDARD LVCMOS33 } [get_ports { a[1] }];
+set_property -dict { PACKAGE_PIN M4    IOSTANDARD LVCMOS33 } [get_ports { a[2] }];
+set_property -dict { PACKAGE_PIN M2    IOSTANDARD LVCMOS33 } [get_ports { a[3] }];
+
+set_property -dict { PACKAGE_PIN M1    IOSTANDARD LVCMOS33 } [get_ports { b[0] }];
+set_property -dict { PACKAGE_PIN N3    IOSTANDARD LVCMOS33 } [get_ports { b[1] }];
+set_property -dict { PACKAGE_PIN N2    IOSTANDARD LVCMOS33 } [get_ports { b[2] }];
+set_property -dict { PACKAGE_PIN N1    IOSTANDARD LVCMOS33 } [get_ports { b[3] }];
+
+
+
+set_property -dict { PACKAGE_PIN P3 IOSTANDARD LVCMOS33 } [get_ports {data[7]}];
+set_property -dict { PACKAGE_PIN M5 IOSTANDARD LVCMOS33 } [get_ports {data[6]}];
+set_property -dict { PACKAGE_PIN N4 IOSTANDARD LVCMOS33 } [get_ports {data[5]}];
+set_property -dict { PACKAGE_PIN R2 IOSTANDARD LVCMOS33 } [get_ports {data[4]}];
+set_property -dict { PACKAGE_PIN R1 IOSTANDARD LVCMOS33 } [get_ports {data[3]}];
+set_property -dict { PACKAGE_PIN R3 IOSTANDARD LVCMOS33 } [get_ports {data[2]}];
+set_property -dict { PACKAGE_PIN T2 IOSTANDARD LVCMOS33 } [get_ports {data[1]}];
+set_property -dict { PACKAGE_PIN T4 IOSTANDARD LVCMOS33 } [get_ports {data[0]}];
+set_property -dict { PACKAGE_PIN T3 IOSTANDARD LVCMOS33 } [get_ports {lcd_e}];
+set_property -dict { PACKAGE_PIN P5 IOSTANDARD LVCMOS33 } [get_ports {lcd_rs}];
+#LCD R/W pin is connected to ground by default.No need to assign LCD R/W Pin.
+
+
+
+module lcd(in_Clk, lcd_rs, lcd_e, data);
+    input in_Clk;
+    output reg [7:0] data;
+    output reg lcd_rs;
+    output lcd_e;
+    
+    wire [7:0] command [0:4];
+    reg [31:0] count=0;
+    
+    assign command [0] = 8'h38; // control signal to display on two lines
+    assign command [1] = 8'h0C; // keep display on but cursor off
+    assign command [2] = 8'h06; // increment the cursor
+    assign command [3] = 8'h01; // clear the display
+    assign command [4] = 8'hC0; // choose the second line
+    
+    clk_div c0 (in_Clk, lcd_e);
+
+    always@(posedge lcd_e) begin
+        count = count + 1;
+        
+        case(count)
+            1: begin lcd_rs = 0; data = 8'h38; end // fill in suitably
+            2: begin lcd_rs = 0; data = 8'h0C; end
+            3: begin lcd_rs = 0; data = 8'h06; end
+            4: begin lcd_rs = 0; data = 8'h01; end
+//            5: begin lcd_rs = 0; data = 8'hC0; end
+            6: begin lcd_rs = 1; data = 8'h30; end // fill in hex corresp to ASCII for 1
+            7: begin lcd_rs = 1; data = 8'h31; end // 2
+            8: begin lcd_rs = 1; data = 8'h32; end // 3
+            9: begin lcd_rs = 1; data = 8'h33; end // 4
+            10: begin lcd_rs = 1; data = 8'h34; end
+            11: begin lcd_rs = 1; data = 8'h35; end
+            12: begin lcd_rs = 1; data = 8'h36; end
+            13: begin lcd_rs = 1; data = 8'h37; end
+            14: begin lcd_rs = 1; data = 8'h38; end
+            15: begin lcd_rs = 1; data = 8'h41; end
+            16: begin lcd_rs = 1; data = 8'h42; end
+            17: begin lcd_rs = 1; data = 8'h43; end
+            18: begin lcd_rs = 1; data = 8'h44; end
+            19: begin lcd_rs = 1; data = 8'h45; end // E
+            20: begin lcd_rs = 1; data = 8'h46; end // F
+            21: begin lcd_rs = 1; data = 8'h47; end // hex corresp to ASCII for G
+            
+            default: begin lcd_rs = 0; data = 8'h80; end
+                // fill in hex value to return cursor to initial c0 
+        endcase
+    end
+endmodule
+
+
+
+module clk_div(inclk, outclk);
+    input inclk;
+    output reg outclk=0;
+    reg[32:0] clock_count;
+
+    initial clock_count=0;
+
+    always @(posedge inclk) begin
+        clock_count=clock_count+1;
+        if(clock_count==10000000) begin
+            outclk = ~outclk;
+            clock_count = 0;
+        end
+    end
+endmodule
+
+module wallace_tb(in_Clk, lcd_rs, lcd_e, data, number);
+reg [3:0] a=2;
+reg [3:0] b=5;
+wire [7:0] m;
+lcd2()
+wallace w0(m,a,b);
+initial
+begin
+#10 a = 3; b = 7;
+#10 a = 15; b = 2;
+
+
+#10 $finish;
+end
+endmodule
+
+
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 08/21/2024 04:37:18 PM
+// Design Name: 
+// Module Name: pareser_tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module pareser_tb();
+
+wire [3:0] bcd0;
+wire [3:0] bcd1;
+wire [3:0] bcd2;
+reg [7:0] inpu;
+binary2bcd w0(bcd0, bcd1, bcd2, inpu);
+initial
+begin
+#10 inpu = 8;
+#10 inpu = 189;
+#10 inpu = 255;
+
+end
+endmodule
+
+
+module wallace(m, a, b, in_Clk, data, lcd_rs, lcd_e);
+input [3:0]a,b;
+input in_Clk;
+output wire [7:0] m;
+output wire [7:0] data;
+    output wire lcd_rs;
+    output lcd_e;
+lcd2 lcdv22(in_Clk, lcd_rs, lcd_e, data, m);
+wire p00,p01,p02,p03,p10,p11,p12,p13,p20,p21,p22,p23,p30,p31,p32,p33;
+wire s0,s1,s2,s3,s4,s5,s6,s7;
+wire c0,c1,c2,c3,c4,c5,c6,c7;
+wire cm3,cm4,cm5,cm6,cm7;
+
+and(p00,a[0],b[0]);
+and(p01,a[0],b[1]);
+and(p02,a[0],b[2]);
+and(p03,a[0],b[3]);
+and(p10,a[1],b[0]);
+and(p11,a[1],b[1]);
+and(p12,a[1],b[2]);
+and(p13,a[1],b[3]);
+and(p20,a[2],b[0]);
+and(p21,a[2],b[1]);
+and(p22,a[2],b[2]);
+and(p23,a[2],b[3]);
+and(p30,a[3],b[0]);
+and(p31,a[3],b[1]);
+and(p32,a[3],b[2]);
+and(p33,a[3],b[3]);
+
+HalfAdder h0(s0,c0,p01,p10);
+FullAdder f0(s1,c1,p02,p11,p20);
+FullAdder f1(s2,c2,p03,p12,p21);
+HalfAdder h1(s3,c3,p13,p22);
+
+HalfAdder h2(s4,c4,s1,c0);
+FullAdder f2(s5,c5,s2,c1,p30);
+FullAdder f3(s6,c6,s3,c2,p31);
+FullAdder f4(s7,c7,p23,c3,p32);
+
+assign m[0]=p00;
+assign m[1]=s0;
+assign m[2]=s4;
+HalfAdder h3(m[3],cm3,s5,c4);
+FullAdder f5(m[4],cm4,s6,c5,cm3);
+FullAdder f6(m[5],cm5,s7,c6,cm4);
+FullAdder f7(m[6],m[7],p33,c7,cm5);
+
+// 3 operations
+
+endmodule
+
+
+
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 08/21/2024 04:30:27 PM
+// Design Name: 
+// Module Name: parser
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module binary2bcd(
+    bcd0, bcd1, bcd2 ,binary
+    );
+input [7:0]binary;
+output reg[3:0] bcd0;
+output reg[3:0] bcd1;
+output reg[3:0] bcd2;
+
+always @(binary) begin
+bcd0 = binary % 10;
+bcd1 = (binary / 10) % 10;
+bcd2 = binary / 100;
+
+end
+
+endmodule
