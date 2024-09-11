@@ -1,3 +1,3 @@
 # EE2016_MUP_LAB
-We do the verilog.... done
-lets start AVR!!
+We do the verilog and AVR for now.....
+
