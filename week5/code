@@ -1,0 +1,87 @@
+/*
+ * DPS_EAST_CHAATTRA.c
+ *
+ * Created: 9/11/2024 2:07:11 PM
+ * Author : ielab1
+ */
+#define int8 unsigned char
+#include <util/delay.h>
+#include <avr/io.h>
+
+int8 led_glow(){
+DDRC = 0x03;
+while(1){
+PORTC = 0x03;
+}
+}
+
+int8 led_blink(){
+DDRC = 0x03;
+while (1) {
+PORTC  = 0x01;
+_delay_ms(1000);
+PORTC = 0x00;
+_delay_ms(1000);  }
+}
+
+int8 gray_code(){
+DDRC = 0x03;
+while (1) {
+PORTC  = 0x00;
+_delay_ms(1000);
+PORTC = 0x01;
+_delay_ms(1000);
+PORTC  = 0x03;
+_delay_ms(1000);
+PORTC = 0x02;
+_delay_ms(1000);
+}
+}
+
+int8 add_2bit(int8 num1,int8 num2){
+DDRC= 0x07;
+int8 sum=num1+num2;
+while(1){
+PORTC= sum;
+}
+}
+
+int8 add_4bit(int8 num1,int8 num2){
+DDRC= 0x1F;
+int8 sum=num1+num2;
+while(1){
+PORTC= sum;
+}
+}
+int8 johnson(){
+DDRC = 0x07;
+while (1) {
+PORTC  = 0x00;
+_delay_ms(1000);
+PORTC = 0x01;
+_delay_ms(1000);
+PORTC  = 0x03;
+_delay_ms(1000);
+PORTC = 0x07;
+_delay_ms(1000);
+PORTC = 0x06;
+_delay_ms(1000);
+PORTC = 0x04;
+_delay_ms(1000);
+}
+
+}
+
+void add_4bit_with_input(){
+DDRD=0x00;
+DDRC=0x1F;
+while(1){
+PORTC = (PIND & 0x0F) + ((PIND & (0xF0)) >> 4);
+}
+}
+
+void main()
+{
+  add_4bit_with_input();
+
+}
